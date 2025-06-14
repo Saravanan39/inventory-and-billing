@@ -121,62 +121,6 @@ function AppHeader({ cartLength, handleImport, resetData, handleExport }) {
   );
 }
 
-// function InventoryPage({ addToCart }) {
-//   const [search, setSearch] = useState("");
-//   const filteredItems = mockData.filter((item) =>
-//     item.name.toLowerCase().includes(search.toLowerCase())
-//   );
-
-//   return (
-//     <main className="container">
-//       <input
-//         type="text"
-//         placeholder="Search products..."
-//         value={search}
-//         onChange={(e) => setSearch(e.target.value)}
-//         style={{
-//           marginBottom: "1rem",
-//           padding: "0.5rem 1rem",
-//           borderRadius: "8px",
-//           border: "1px solid #ccc",
-//           width: "100%",
-//           maxWidth: "400px"
-//         }}
-//       />
-//       <div className="card-grid">
-//         {filteredItems.map((item) => (
-//           <div key={item.name} className="card">
-//             {item.veg ? (
-//               <div className="veg-tag"></div>
-//             ) : (
-//               <div className="veg-tag non-veg-tag"></div>
-//             )}
-//             <img
-//               src={`/${item.name.toLowerCase()}.jpg`}
-//               onError={(e) => {
-//                 e.target.onerror = null;
-//                 e.target.src = "/bagel.jpg";
-//               }}
-//               alt={item.name}
-//               className="product-image"
-//             />
-//             <div className="item-name">{item.name}</div>
-//             <div className="details">
-//               <span>Total Items: {item.quantity}</span>
-//               <span>Sold: {item.sold}</span>
-//               <span>Remaining: {item.quantity - item.sold}</span>
-//               <span>Price: ${item.price}</span>
-//             </div>
-//             <div className="add-icon" onClick={() => addToCart(item.name)}>
-//               +
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     </main>
-//   );
-// }
-
 function InventoryPage({ inventory, addToCart, updateInventory }) {
   const [search, setSearch] = useState("");
   const filteredItems = inventory.filter((item) =>
