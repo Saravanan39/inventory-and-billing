@@ -46,7 +46,14 @@ const mockData = [
   { name: "Espresso", quantity: 18, price: 2.2, sold: 0, veg: true },
 ];
 
-function AppHeader({ cartLength, handleImport, resetData, handleExport }) {
+function AppHeader({
+  cartLength,
+  handleImport,
+  resetData,
+  handleExport,
+  onLogout,
+  userName,
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -62,27 +69,45 @@ function AppHeader({ cartLength, handleImport, resetData, handleExport }) {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  const isLoggedIn = userName?.trim();
+
   return (
     <header className="header">
       <div className="header-left">
-        <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
-          {menuOpen ? (
-            <span style={{ fontWeight: "bold", fontSize: "20px" }}>×</span>
-          ) : (
-            <>
-              <div></div>
-              <div></div>
-              <div></div>
-            </>
-          )}
-        </div>
+        {isLoggedIn && (
+          <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? (
+              <span style={{ fontWeight: "bold", fontSize: "20px" }}>×</span>
+            ) : (
+              <>
+                <div></div>
+                <div></div>
+                <div></div>
+              </>
+            )}
+          </div>
+        )}
         <h1 className="title">Cake carousel</h1>
       </div>
-      <div className="header-right">
-        <Link to="/cart">
-          <button className="button">🛒 {cartLength}</button>
-        </Link>
-      </div>
+      {isLoggedIn && (
+        <div className="header-right">
+          <Link to="/cart">
+            <button className="button">🛒 {cartLength}</button>
+          </Link>
+          <button className="button small" onClick={onLogout}>
+            Logout
+          </button>
+          <span
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+          >
+            <span role="img" aria-label="user">
+              👤
+            </span>
+            {userName}
+          </span>
+        </div>
+      )}
+
       <div className={`menu-slideout ${menuOpen ? "open" : ""}`}>
         <label
           htmlFor="file-upload"
@@ -121,6 +146,40 @@ function AppHeader({ cartLength, handleImport, resetData, handleExport }) {
   );
 }
 
+function LoginPage({ onLogin }) {
+  const [username, setUsername] = useState("");
+
+  const handleLogin = () => {
+    if (username?.trim()) {
+      onLogin(username);
+    }
+  };
+
+  return (
+    <main className="container" style={{ textAlign: "center" }}>
+      <h1>Login</h1>
+      <input
+        type="text"
+        placeholder="Enter your name"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        style={{
+          padding: "0.5rem",
+          borderRadius: "8px",
+          border: "1px solid #ccc",
+          width: "100%",
+          maxWidth: "300px",
+          marginBottom: "1rem",
+        }}
+      />
+      <br />
+      <button className="button" onClick={handleLogin}>
+        Login
+      </button>
+    </main>
+  );
+}
+
 function InventoryPage({ inventory, addToCart, updateInventory }) {
   const [search, setSearch] = useState("");
   const filteredItems = inventory.filter((item) =>
@@ -131,6 +190,8 @@ function InventoryPage({ inventory, addToCart, updateInventory }) {
     addToCart(item.name);
     updateInventory(item.name);
   };
+
+  const isSearchResultEmpty = inventory.length && filteredItems.length === 0;
 
   return (
     <main className="container">
@@ -148,40 +209,51 @@ function InventoryPage({ inventory, addToCart, updateInventory }) {
           maxWidth: "400px",
         }}
       />
-      <div className="card-grid">
-        {filteredItems.map((item) => (
-          <div key={item.name} className={`card ${item.quantity - item.sold === 0 ? 'sold-out' : ''}`}>
-            {item.veg ? (
-              <div className="veg-tag"></div>
-            ) : (
-              <div className="veg-tag non-veg-tag"></div>
-            )}
-            <img
-              src={`/${item.name.toLowerCase()}.jpg`}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/bagel.jpg";
-              }}
-              alt={item.name}
-              className="product-image"
-            />
-            <div className="item-name">{item.name}</div>
-            <div className="details">
-              <span>Total Items: {item.quantity}</span>
-              <span>Sold: {item.sold}</span>
-              <span>Remaining: {item.quantity - item.sold}</span>
-              <span>Price: {item.price}</span>
-            </div>
-            {item.quantity - item.sold > 0 ? (
-              <div className="add-icon" onClick={() => handleAdd(item)}>
-                +
+      {!isSearchResultEmpty ? (
+        <div className="card-grid">
+          {filteredItems.map((item) => (
+            <div
+              key={item.name}
+              className={`card ${
+                item.quantity - item.sold === 0 ? "sold-out" : ""
+              }`}
+            >
+              {item.veg ? (
+                <div className="veg-tag"></div>
+              ) : (
+                <div className="veg-tag non-veg-tag"></div>
+              )}
+              <img
+                src={`/${item.name.toLowerCase()}.jpg`}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/bagel.jpg";
+                }}
+                alt={item.name}
+                className="product-image"
+              />
+              <div className="item-name">{item.name}</div>
+              <div className="details">
+                <span>Total Items: {item.quantity}</span>
+                <span>Sold: {item.sold}</span>
+                <span>Remaining: {item.quantity - item.sold}</span>
+                <span>Price: {item.price}</span>
               </div>
-            ) : (
-              <div className="sold-banner">Sold Out</div>
-            )}
-          </div>
-        ))}
-      </div>
+              {item.quantity - item.sold > 0 ? (
+                <div className="add-icon" onClick={() => handleAdd(item)}>
+                  +
+                </div>
+              ) : (
+                <div className="sold-banner">Sold Out</div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ textAlign: "center", padding: "2rem", width: "100%" }}>
+          No products found
+        </div>
+      )}
     </main>
   );
 }
@@ -221,6 +293,7 @@ function CartPage({ cart, inventory, clearCart }) {
 export default function App() {
   const [inventory, setInventory] = useState([]);
   const [cart, setCart] = useState([]);
+  const [userName, setUsername] = useState(localStorage.getItem("username"));
 
   const resetData = () => {
     localStorage.removeItem("inventory");
@@ -238,6 +311,21 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("inventory", JSON.stringify(inventory));
   }, [inventory]);
+
+  useEffect(() => {
+    if (userName?.trim()) {
+      localStorage.setItem("username", userName);
+    }
+  }, [userName]);
+
+  const handleLogin = (name) => {
+    setUsername(name.trim());
+  };
+
+  const handleLogout = () => {
+    setUsername("");
+    localStorage.setItem("username", "");
+  };
 
   const handleImport = (e) => {
     const file = e.target.files[0];
@@ -308,20 +396,26 @@ export default function App() {
       <div id="root">
         <AppHeader
           cartLength={cart.length}
+          userName={userName}
           handleImport={handleImport}
           resetData={resetData}
           handleExport={handleExport}
+          onLogout={handleLogout}
         />
         <Routes>
           <Route
             path="/"
             element={
-              <InventoryPage
-                inventory={inventory}
-                cart={cart}
-                addToCart={addToCart}
-                updateInventory={updateInventory}
-              />
+              !userName ? (
+                <LoginPage onLogin={handleLogin} />
+              ) : (
+                <InventoryPage
+                  inventory={inventory}
+                  cart={cart}
+                  addToCart={addToCart}
+                  updateInventory={updateInventory}
+                />
+              )
             }
           />
           <Route
